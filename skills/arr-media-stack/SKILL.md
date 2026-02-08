@@ -7,7 +7,15 @@ description: Use when managing the Docker *arr media stack, troubleshooting cont
 
 ## Overview
 
-Docker Compose media automation stack at `~/docker/`. Uses `docker compose` (v2, no hyphen). All services run on `media_network` bridge with Traefik reverse proxy. PUID/PGID=1000, TZ=America/New_York.
+Docker Compose media automation stack at `~/docker/`. Runs on **rootless Podman** (not Docker) via `podman-compose`. Uses `docker compose` (v2, no hyphen) which aliases to podman-compose. All services run on `media_network` bridge with Traefik reverse proxy. PUID/PGID=1000, TZ=America/New_York.
+
+## Podman Constraints (Bazzite)
+
+Bazzite uses rootless Podman. Key differences from Docker:
+
+- **Socket path:** Podman socket is at `/run/user/1000/podman/podman.sock` (not `/var/run/docker.sock`). Services needing the Docker socket (Traefik, Homarr) mount the Podman socket in its place.
+- **Privileged ports:** Rootless containers cannot bind below port 1024. Traefik uses `8880:80` and `8443:443` instead of direct 80/443.
+- **Image registries:** Some `docker.io/linuxserver/` images lack proper tags. Readarr uses `lscr.io/linuxserver/readarr` (arch-prefixed nightly tags only, no `latest`). Whisparr uses `ghcr.io/hotio/whisparr:latest`.
 
 ## Helper Scripts
 
@@ -31,7 +39,7 @@ cd ~/docker && docker compose logs --tail=100 <service>
 
 | Service | Container | Host Port | Internal Port |
 |---------|-----------|-----------|---------------|
-| Traefik | traefik | 8080, 80, 443 | 8080 |
+| Traefik | traefik | 8080, 8880, 8443 | 8080, 80, 443 |
 | Prowlarr | prowlarr | 9696 | 9696 |
 | qBittorrent | qbittorrent | **8081** | 8080 |
 | Radarr | radarr | 7878 | 7878 |
@@ -112,6 +120,14 @@ Follow the existing pattern in `docker-compose.yml`:
       - "traefik.http.services.service-name.loadbalancer.server.port=CONTAINER_PORT"
 ```
 
+If the service needs the Docker socket (e.g. dashboards), add:
+```yaml
+    volumes:
+      - /run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
+```
+
+Host ports must be >= 1024 (rootless Podman).
+
 Then deploy: `cd ~/docker && docker compose up -d service-name`
 
 ## Troubleshooting
@@ -119,6 +135,9 @@ Then deploy: `cd ~/docker && docker compose up -d service-name`
 | Symptom | Check |
 |---------|-------|
 | Container won't start | `cd ~/docker && docker compose logs <service>` |
+| "bind: permission denied" on port | Rootless Podman can't bind <1024. Remap to higher port (e.g. `8880:80`) |
+| "statfs /run/docker.sock: no such file" | Mount Podman socket: `/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro` |
+| "manifest unknown" pulling image | Image may lack `latest` tag. Check `podman search --list-tags <image>` for available tags |
 | Web UI not loading | Verify correct host port in table above |
 | Permission denied | `sudo chown -R 1000:1000 ~/docker/data` |
 | Network issues between services | Services use container names as hostnames on `media_network` |
@@ -152,3 +171,7 @@ Then deploy: `cd ~/docker && docker compose up -d service-name`
 | Using `nano` to edit compose file | Use the Edit tool on `~/docker/docker-compose.yml` |
 | Wrong network name | Network is `media_network` |
 | Missing Traefik labels on new service | Copy label pattern from existing services |
+| Mounting `/var/run/docker.sock` | Use `/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro` |
+| Binding port 80 or 443 | Rootless Podman can't. Use `8880:80` and `8443:443` |
+| Using `docker.io/linuxserver/readarr:latest` | No `latest` tag. Use `lscr.io/linuxserver/readarr:amd64-nightly-version-<ver>` |
+| Using `docker.io/linuxserver/whisparr:latest` | Access denied. Use `ghcr.io/hotio/whisparr:latest` |
