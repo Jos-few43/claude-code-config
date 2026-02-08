@@ -1,0 +1,18 @@
+# Credentials and secrets
+.credentials.json
+
+# Transient data
+cache/
+debug/
+file-history/
+history.jsonl
+shell-snapshots/
+tasks/
+todos/
+transcripts/
+
+# Plugins (managed externally)
+plugins/
+
+# Project-specific state
+projects/
