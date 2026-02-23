@@ -1,4 +1,30 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/SCRiPTz/sync-claude-to-vault.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "input=$(cat); user=$(whoami); host=$(hostname -s); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); model=$(echo \"$input\" | jq -r '.model.display_name'); remaining=$(echo \"$input\" | jq -r '.context_window.remaining_percentage // empty'); short_dir=$(echo \"$cwd\" | sed \"s|^$HOME|~|\"); if [ \"$cwd\" = \"$HOME\" ]; then short_dir=\"~\"; fi; git_info=\"\"; if [ -d \"$cwd/.git\" ] || git -C \"$cwd\" rev-parse --git-dir > /dev/null 2>&1; then branch=$(git -C \"$cwd\" --no-optional-locks rev-parse --abbrev-ref HEAD 2>/dev/null); if [ -n \"$branch\" ]; then git_info=\" (git:$branch)\"; fi; fi; context_info=\"\"; if [ -n \"$remaining\" ]; then context_info=\" | ctx:${remaining}%\"; fi; printf \"\\033[36m%s@%s\\033[0m:\\033[34m%s\\033[0m\\033[32m%s\\033[0m | \\033[35m%s\\033[0m%s\" \"$user\" \"$host\" \"$short_dir\" \"$git_info\" \"$model\" \"$context_info\""
@@ -9,6 +35,16 @@
     "firecrawl@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": true,
-    "huggingface-skills@claude-plugins-official": true
-  }
+    "huggingface-skills@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true
+  },
+  "effortLevel": "medium"
 }
