@@ -23,6 +23,92 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/skill-suggest-llm.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/notify-waiting.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/postwrite-vault-sync.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__obsidian__view",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/vault-access-tracker.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__obsidian__get_current_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/vault-access-tracker.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/skill-suggest-stop.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/notify-waiting.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/home/yish/.claude/hooks/memory-nudge-stop.sh",
+            "timeout": 3
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -44,7 +130,10 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": true,
+    "linear@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
   },
   "effortLevel": "medium"
 }
